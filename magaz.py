@@ -3,10 +3,9 @@ from telebot import types
 import markup
 import db_cmd
 import ast
+from settings import token
 
 
-
-token = '2005668889:AAFGnIiyzHUfwwzK8JqYOQ95TeDORFfcSbo'
 bot = telebot.TeleBot(token)
 
 
