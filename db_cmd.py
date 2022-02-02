@@ -22,7 +22,8 @@ def create_tables():
 		cur.execute(f"""CREATE TABLE IF NOT EXISTS cart(
 						user_id INTEGER PRIMARY KEY NOT NULL,
 						list_buy TEXT NOT NULL,
-						amount INTEGER NOT NULL)""")
+						amount INTEGER NOT NULL,
+						active INTEGER NOT NULL)""")
 
 def check_user_id(_user_id):
 	db_file = "db.db"
@@ -108,10 +109,10 @@ def set_cart(_user_id, _lst_id_product, _amount):
 	db_file = "db.db"
 	conn = None
 	try:
-		sql = f"""INSERT INTO cart(user_id,list_buy,amount) VALUES(?,?,?)"""
+		sql = f"""INSERT INTO cart(user_id,list_buy,amount,active) VALUES(?,?,?,?)"""
 		conn = sqlite3.connect(db_file)
 		cur = conn.cursor()
-		cur.execute(sql, (_user_id, _lst_id_product, _amount))
+		cur.execute(sql, (_user_id, _lst_id_product, _amount, '0'))
 		conn.commit()
 		cur.close()
 	except Exception as ex:

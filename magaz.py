@@ -78,6 +78,7 @@ def callback_add_to_cart(call):
             cart_content = db_cmd.get_cart(uid)
             print(cart_content)
             if cart_content is None:
+                print('Пустая корзина')
                 lst_id_product = []
                 lst_id_product.append(id_product)
                 db_cmd.set_cart(uid, str(lst_id_product), price_product)
