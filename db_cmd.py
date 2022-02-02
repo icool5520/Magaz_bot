@@ -86,22 +86,58 @@ def get_categors():
 		return lst_categor
 
 
-def get_img_id(_id_product):
+def get_cart(_user_id):
 	db_file = "db.db"
 	conn = None
 	try:
-		sql = f"""SELECT img FROM Products WHERE id = {_id_product}"""
+		sql = f"""SELECT * FROM cart WHERE user_id = {_user_id}"""
 		conn = sqlite3.connect(db_file)
 		cur = conn.cursor()
 		cur.execute(sql)
 		data = cur.fetchone()
 		cur.close()
 	except Exception as ex:
-		print('get_img_id:', ex)
+		print('get_cart:', ex)
 	finally:
 		if conn is not None:
 			conn.close()
-		return data[0]
+		return data
+
+
+def set_cart(_user_id, _lst_id_product, _amount):
+	db_file = "db.db"
+	conn = None
+	try:
+		sql = f"""INSERT INTO cart(user_id,list_buy,amount) VALUES(?,?,?)"""
+		conn = sqlite3.connect(db_file)
+		cur = conn.cursor()
+		cur.execute(sql, (_user_id, _lst_id_product, _amount))
+		conn.commit()
+		cur.close()
+	except Exception as ex:
+		print('up_cart:', ex)
+	finally:
+		if conn is not None:
+			conn.close()
+
+def up_cart(_user_id, _lst_id_product, _amount):
+	db_file = "db.db"
+	conn = None
+	try:
+		sql = f"""UPDATE cart SET list_buy="{_lst_id_product}",
+								   amount={_amount} 
+								   WHERE user_id={_user_id}"""
+		conn = sqlite3.connect(db_file)
+		cur = conn.cursor()
+		cur.execute(sql)
+		conn.commit()
+		cur.close()
+	except Exception as ex:
+		print('up_cart:', ex)
+	finally:
+		if conn is not None:
+			conn.close()
+
 
 
 def get_products(_categor):

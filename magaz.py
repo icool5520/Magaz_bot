@@ -55,19 +55,31 @@ def callback_products(call):
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "add")
-def callback_cart(call):
+def callback_add_to_cart(call):
 	try:
 		cid = call.message.chat.id
 		uid = call.from_user.id
 		mid = call.message.message_id
 		if cid == uid:
+			data = []
 			data = dict(ast.literal_eval(db_cmd.get_data(uid)))
-			id_product = data['id'] #integer
-
+			id_product = data['id'] # integer
+			price_product = db_cmd.get_info_product(id_product)[3] # integer
+			cart_content = db_cmd.get_cart(uid)
+			print(cart_content)
+			if cart_content is None:
+				lst_id_product = []
+				lst_id_product.append(id_product)
+				db_cmd.set_cart(uid, str(lst_id_product), price_product)
+			else:
+				lst_id_product = ast.literal_eval(cart_content[1])
+				lst_id_product.append(id_product)
+				amount = price_product + int(cart_content[2])
+				db_cmd.up_cart(uid, str(lst_id_product), amount)
 
 
 	except Exception as ex:
-		print('callback_cart:', ex)
+		print('callback_add_to_cart:', ex)
 
 
 '''
