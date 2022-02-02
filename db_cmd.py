@@ -21,8 +21,8 @@ def create_tables():
 	with conn:
 		cur.execute(f"""CREATE TABLE IF NOT EXISTS cart(
 						user_id INTEGER PRIMARY KEY NOT NULL,
-						list_buy TEXT,
-						amount TEXT)""")
+						list_buy TEXT NOT NULL,
+						amount INTEGER NOT NULL)""")
 
 def check_user_id(_user_id):
 	db_file = "db.db"
