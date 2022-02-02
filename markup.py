@@ -16,14 +16,23 @@ def gen_markup():
 def products_menu(_categor):
     markup = types.InlineKeyboardMarkup()
     products = db_cmd.get_products(_categor)
-    products_kb = []
     for i in products:
-        products_kb.append(types.InlineKeyboardButton(i[1], callback_data=f"prod_{i[0]}"))
+        markup.add(types.InlineKeyboardButton(i[1], callback_data=f"prod_{i[0]}"))
     btn1 = types.InlineKeyboardButton("Главное меню", callback_data="start")
-    markup.add(*products_kb)
     markup.row(btn1)
     return markup
 
+# версия с выводом маленьких кнопок
+# def products_menu(_categor):
+#     markup = types.InlineKeyboardMarkup()
+#     products = db_cmd.get_products(_categor)
+#     products_kb = []
+#     for i in products:
+#         products_kb.append(types.InlineKeyboardButton(i[1], callback_data=f"prod_{i[0]}"))
+#     btn1 = types.InlineKeyboardButton("Главное меню", callback_data="start")
+#     markup.add(*products_kb)
+#     markup.row(btn1)
+#     return markup
 
 def buy():
     markup = types.InlineKeyboardMarkup()
