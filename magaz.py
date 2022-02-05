@@ -48,7 +48,7 @@ def callback_categors(call):
         if cid == uid:
             categor = str(call.data[4:])
             bot.edit_message_text(chat_id=cid, message_id=mid, text="Продукция категории: " + str(categor),
-                                  reply_markup=markup.products_menu(categor))
+                                  reply_markup=markup.gen_products_menu_markup(categor))
     except Exception as ex:
         print('callback_categors:', ex)
 
@@ -67,12 +67,12 @@ def callback_products(call):
             new_data['id'] = id_product
             db_cmd.up_data(uid, str(new_data))
             bot.send_photo(cid, photo=info[5])
-            cart_content = db_cmd.get_cart(uid)
-            if cart_content is None or id_product not in list(ast.literal_eval(cart_content[1])):
+            cart_content = db_cmd.get_cart_not_confirmed(uid)
+            if cart_content is None or id_product not in list(ast.literal_eval(cart_content[2])):
                 bot.send_message(cid, f"Название: {info[1]}\nЦена: {info[3]}\nИнфо: {info[4]}",
                              reply_markup=markup.buy(id_product))
             else:
-                lst_id_product = list(ast.literal_eval(cart_content[1]))
+                lst_id_product = list(ast.literal_eval(cart_content[2]))
                 num = lst_id_product.count(id_product)
                 bot.send_message(cid, f"Название: {info[1]}\nЦена: {info[3]}\nИнфо: {info[4]}" +
                                  f"\n\n\U00002705Добавлено в корзину {num} - шт.", reply_markup=markup.buy(id_product))
@@ -90,22 +90,83 @@ def callback_add_to_cart(call):
             id_product = int(call.data[4:])
             info = db_cmd.get_info_product(id_product)
             price_product = info[3]  # integer
-            cart_content = db_cmd.get_cart(uid)
+            cart_content = db_cmd.get_cart_not_confirmed(uid)
             if cart_content is None:
-                print('Пустая корзина')
                 lst_id_product = []
                 lst_id_product.append(id_product)
                 db_cmd.set_cart(uid, str(lst_id_product), price_product)
             else:
-                lst_id_product = ast.literal_eval(cart_content[1])
+                lst_id_product = list(ast.literal_eval(cart_content[2]))
                 lst_id_product.append(id_product)
-                amount = price_product + cart_content[2]
+                amount = price_product + cart_content[3]
                 db_cmd.up_cart(uid, str(lst_id_product), amount)
             num = lst_id_product.count(id_product)
             bot.edit_message_text(chat_id=cid, message_id=mid, text=f"Название: {info[1]}\nЦена: {info[3]}\nИнфо: {info[4]}" +
                                  f"\n\n\U00002705Добавлено в корзину - {num} шт.", reply_markup=markup.buy(id_product))
     except Exception as ex:
         print('callback_add_to_cart:', ex)
+
+
+@bot.callback_query_handler(func=lambda call: call.data == "cart")
+def callback_display_cart(call):
+    try:
+        cid = call.message.chat.id
+        uid = call.from_user.id
+        mid = call.message.message_id
+        if cid == uid:
+            cart_content = db_cmd.get_cart_not_confirmed(uid)
+            cart_text_message = ""
+            if cart_content is None:
+                bot.send_message(chat_id=cid, text= "---Корзина--- ")
+                bot.send_message(chat_id=cid, text="Корзина пуста", reply_markup=markup.gen_empty_cart_markup())
+            else:
+                lst_id_product = list(ast.literal_eval(cart_content[2]))
+                unique_list_id_product = list({key: None for key in lst_id_product}.keys())
+                amount = cart_content[3]
+                if len(unique_list_id_product) == 1:
+                    info_product = db_cmd.get_info_product(unique_list_id_product[0])
+                    bot.send_message(chat_id=cid, text=f"{info_product[1]} \nКол-во: {lst_id_product.count(int(info_product[0]))}\n" +
+                                                       f"\nИтого: {amount} грн.",
+                                     reply_markup=markup.gen_cart_markup())
+                else:
+                    info_product = db_cmd.get_info_product_cart(tuple(unique_list_id_product))
+                    bot.send_message(chat_id=cid, text= "---Корзина---")
+                    for i in unique_list_id_product:
+                        for j in info_product:
+                            if int(j[0]) == i:
+                                cart_text_message = cart_text_message + f"{j[1]} \nКол-во: {lst_id_product.count(int(j[0]))}\n"
+                    cart_text_message = cart_text_message + f"\nИтого: {amount} грн."
+                    bot.send_message(chat_id=cid, text=cart_text_message, reply_markup=markup.gen_cart_markup())
+    except Exception as ex:
+        print('callback_display_cart:', ex)
+
+
+@bot.callback_query_handler(func=lambda call: call.data == "delete_order")
+def callback_delete_order(call):
+    try:
+        cid = call.message.chat.id
+        uid = call.from_user.id
+        mid = call.message.message_id
+        if cid == uid:
+            db_cmd.delete_order_cart(uid)
+            bot.edit_message_text(chat_id=cid, message_id=mid, text="Заказ удалён",
+                                  reply_markup=markup.gen_empty_cart_markup())
+    except Exception as ex:
+        print('callback_delete_order:', ex)
+
+
+@bot.callback_query_handler(func=lambda call: call.data == "confirm_order")
+def callback_confirm_order(call):
+    try:
+        cid = call.message.chat.id
+        uid = call.from_user.id
+        mid = call.message.message_id
+        if cid == uid:
+            db_cmd.up_cart_order_status(uid, "confirmed")
+            bot.edit_message_text(chat_id=cid, message_id=mid, text="Заказ отправлен в обаботку",
+                                  reply_markup=markup.gen_empty_cart_markup())
+    except Exception as ex:
+        print('callback_confirm_order:', ex)
 
 
 if __name__ == '__main__':

@@ -20,10 +20,11 @@ def create_tables():
 						img TEXT)""")
 	with conn:
 		cur.execute(f"""CREATE TABLE IF NOT EXISTS cart(
-						user_id INTEGER PRIMARY KEY NOT NULL,
+						id INTEGER PRIMARY KEY NOT NULL,
+						user_id INTEGER NOT NULL,
 						list_buy TEXT NOT NULL,
 						amount INTEGER NOT NULL,
-						active INTEGER NOT NULL)""")
+						status TEXT NOT NULL)""")
 	with conn:
 		cur.execute(f"""CREATE TABLE IF NOT EXISTS admins(
 						user_id INTEGER PRIMARY KEY NOT NULL,
@@ -116,11 +117,11 @@ def get_categors():
 		return lst_categor
 
 
-def get_cart(_user_id):
+def get_cart_not_confirmed(_user_id):
 	db_file = "db.db"
 	conn = None
 	try:
-		sql = f"""SELECT * FROM cart WHERE user_id = {_user_id}"""
+		sql = f"""SELECT * FROM cart WHERE user_id = {_user_id} AND status='not_confirmed'"""
 		conn = sqlite3.connect(db_file)
 		cur = conn.cursor()
 		cur.execute(sql)
@@ -138,10 +139,10 @@ def set_cart(_user_id, _lst_id_product, _amount):
 	db_file = "db.db"
 	conn = None
 	try:
-		sql = f"""INSERT INTO cart(user_id,list_buy,amount,active) VALUES(?,?,?,?)"""
+		sql = f"""INSERT INTO cart(user_id,list_buy,amount,status) VALUES(?,?,?,?)"""
 		conn = sqlite3.connect(db_file)
 		cur = conn.cursor()
-		cur.execute(sql, (_user_id, _lst_id_product, _amount, '0'))
+		cur.execute(sql, (_user_id, _lst_id_product, _amount, 'not_confirmed'))
 		conn.commit()
 		cur.close()
 	except Exception as ex:
@@ -164,6 +165,38 @@ def up_cart(_user_id, _lst_id_product, _amount):
 		cur.close()
 	except Exception as ex:
 		print('up_cart:', ex)
+	finally:
+		if conn is not None:
+			conn.close()
+
+def up_cart_order_status(_user_id, _ststus):
+	db_file = "db.db"
+	conn = None
+	try:
+		sql = f"""UPDATE cart SET status="{_ststus}" WHERE user_id={_user_id}"""
+		conn = sqlite3.connect(db_file)
+		cur = conn.cursor()
+		cur.execute(sql)
+		conn.commit()
+		cur.close()
+	except Exception as ex:
+		print('up_cart_order_status:', ex)
+	finally:
+		if conn is not None:
+			conn.close()
+
+def delete_order_cart(_user_id):
+	db_file = "db.db"
+	conn = None
+	try:
+		sql = f"""DELETE FROM cart WHERE user_id={_user_id}"""
+		conn = sqlite3.connect(db_file)
+		cur = conn.cursor()
+		cur.execute(sql)
+		conn.commit()
+		cur.close()
+	except Exception as ex:
+		print('delete_order_cart:', ex)
 	finally:
 		if conn is not None:
 			conn.close()
@@ -205,6 +238,24 @@ def get_info_product(_id_product):
 		cur.close()
 	except Exception as ex:
 		print('get_info_product:', ex)
+	finally:
+		if conn is not None:
+			conn.close()
+		return data
+
+
+def get_info_product_cart(_id_product):
+	db_file = "db.db"
+	conn = None
+	try:
+		sql = f"""SELECT * FROM products WHERE id IN {_id_product};"""
+		conn = sqlite3.connect(db_file)
+		cur = conn.cursor()
+		cur.execute(sql)
+		data = cur.fetchall()
+		cur.close()
+	except Exception as ex:
+		print('get_info_product_cart:', ex)
 	finally:
 		if conn is not None:
 			conn.close()
