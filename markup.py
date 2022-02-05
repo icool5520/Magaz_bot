@@ -13,6 +13,17 @@ def gen_markup():
     markup.row(btn1)
     return markup
 
+
+def gen_admin_markup():
+    markup = types.InlineKeyboardMarkup()
+    btn1 = types.InlineKeyboardButton("Заказы", callback_data="orders")
+    btn2 = types.InlineKeyboardButton("Товары", callback_data="tovs")
+    markup.add(btn1)
+    markup.add(btn2)
+    return markup
+
+
+
 def products_menu(_categor):
     markup = types.InlineKeyboardMarkup()
     products = db_cmd.get_products(_categor)
@@ -35,9 +46,9 @@ def products_menu(_categor):
 #     markup.row(btn1)
 #     return markup
 
-def buy():
+def buy(_id_product):
     markup = types.InlineKeyboardMarkup()
-    btn1 = types.InlineKeyboardButton("Добавить в корзину", callback_data="add")
+    btn1 = types.InlineKeyboardButton("Добавить в корзину", callback_data=f"add_{_id_product}")
     btn2 = types.InlineKeyboardButton("Главное меню", callback_data="start")
     markup.add(btn1)
     markup.add(btn2)

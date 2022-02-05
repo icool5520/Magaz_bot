@@ -11,7 +11,7 @@ def create_tables():
 						state TEXT NOT NULL,
 						data TEXT NOT NULL)""")
 	with conn:
-		cur.execute(f"""CREATE TABLE IF NOT EXISTS Products(
+		cur.execute(f"""CREATE TABLE IF NOT EXISTS products(
 						id INTEGER PRIMARY KEY NOT NULL,
 						name TEXT NOT NULL,
 						categors TEXT NOT NULL,
@@ -97,7 +97,7 @@ def get_categors():
 	db_file = "db.db"
 	conn = None
 	try:
-		sql = f"""SELECT categors FROM Products"""
+		sql = f"""SELECT categors FROM products"""
 		conn = sqlite3.connect(db_file)
 		cur = conn.cursor()
 		cur.execute(sql)
@@ -106,6 +106,7 @@ def get_categors():
 		for i in data:
 			lst_categor.append(i[0])
 		lst_categor = list(set(lst_categor))
+		lst_categor.sort()
 		cur.close()
 	except Exception as ex:
 		print('get_categors:', ex)
@@ -173,7 +174,7 @@ def get_products(_categor):
 	db_file = "db.db"
 	conn = None
 	try:
-		sql = f"""SELECT * FROM Products WHERE categors='{_categor}'"""
+		sql = f"""SELECT * FROM products WHERE categors='{_categor}'"""
 		conn = sqlite3.connect(db_file)
 		cur = conn.cursor()
 		cur.execute(sql)
@@ -182,6 +183,7 @@ def get_products(_categor):
 		for i in data:
 			lst_product.append(i)
 		lst_product = list(set(lst_product))
+		lst_product.sort()
 		cur.close()
 	except Exception as ex:
 		print('get_products:', ex)
@@ -195,7 +197,7 @@ def get_info_product(_id_product):
 	db_file = "db.db"
 	conn = None
 	try:
-		sql = f"""SELECT * FROM Products WHERE id={_id_product}"""
+		sql = f"""SELECT * FROM products WHERE id={_id_product}"""
 		conn = sqlite3.connect(db_file)
 		cur = conn.cursor()
 		cur.execute(sql)
