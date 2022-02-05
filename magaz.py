@@ -29,6 +29,15 @@ def callback_main_menu(call):
     except Exception as ex:
         print('callback_main_menu:', ex)
 
+@bot.message_handler(commands=['admin'])
+def message_handler(message):
+    try:
+        cid = message.chat.id
+        uid = message.from_user.id
+        db_cmd.check_user_id(uid)
+        bot.send_message(cid, "Магазин", reply_markup=markup.gen_markup())
+    except Exception as ex:
+        print('start_msg:', ex)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("cat_"))
 def callback_categors(call):
