@@ -128,7 +128,43 @@ def get_cart_not_confirmed(_user_id):
 		data = cur.fetchone()
 		cur.close()
 	except Exception as ex:
-		print('get_cart:', ex)
+		print('get_cart_not_confirmed:', ex)
+	finally:
+		if conn is not None:
+			conn.close()
+		return data
+
+
+def get_cart_confirmed():
+	db_file = "db.db"
+	conn = None
+	try:
+		sql = f"""SELECT * FROM cart WHERE status='confirmed'"""
+		conn = sqlite3.connect(db_file)
+		cur = conn.cursor()
+		cur.execute(sql)
+		data = cur.fetchall()
+		cur.close()
+	except Exception as ex:
+		print('get_cart_confirmed:', ex)
+	finally:
+		if conn is not None:
+			conn.close()
+		return data
+
+
+def get_cart_by_id(_id):
+	db_file = "db.db"
+	conn = None
+	try:
+		sql = f"""SELECT * FROM cart WHERE id={_id} AND status='confirmed'"""
+		conn = sqlite3.connect(db_file)
+		cur = conn.cursor()
+		cur.execute(sql)
+		data = cur.fetchone()
+		cur.close()
+	except Exception as ex:
+		print('get_cart_by_id:', ex)
 	finally:
 		if conn is not None:
 			conn.close()
@@ -169,7 +205,7 @@ def up_cart(_user_id, _lst_id_product, _amount):
 		if conn is not None:
 			conn.close()
 
-def up_cart_order_status(_user_id, _ststus):
+def up_cart_order_status_by_uid(_user_id, _ststus):
 	db_file = "db.db"
 	conn = None
 	try:
@@ -180,10 +216,28 @@ def up_cart_order_status(_user_id, _ststus):
 		conn.commit()
 		cur.close()
 	except Exception as ex:
-		print('up_cart_order_status:', ex)
+		print('up_cart_order_status_by_uid:', ex)
 	finally:
 		if conn is not None:
 			conn.close()
+
+
+def up_cart_order_status_by_id(_id_order, _ststus):
+	db_file = "db.db"
+	conn = None
+	try:
+		sql = f"""UPDATE cart SET status="{_ststus}" WHERE id={_id_order}"""
+		conn = sqlite3.connect(db_file)
+		cur = conn.cursor()
+		cur.execute(sql)
+		conn.commit()
+		cur.close()
+	except Exception as ex:
+		print('up_cart_order_status_by_id:', ex)
+	finally:
+		if conn is not None:
+			conn.close()
+
 
 def delete_order_cart(_user_id):
 	db_file = "db.db"
