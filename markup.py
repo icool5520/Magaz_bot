@@ -17,9 +17,20 @@ def gen_markup():
 def gen_admin_markup():
     markup = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton("Новые заказы", callback_data="orders")
-    btn2 = types.InlineKeyboardButton("Товары", callback_data="tovs")
+    btn2 = types.InlineKeyboardButton("Меню товаров", callback_data="products")
     markup.add(btn1)
     markup.add(btn2)
+    return markup
+
+
+def gen_admin_products_markup():
+    markup = types.InlineKeyboardMarkup()
+    btn1 = types.InlineKeyboardButton("Добавить товар", callback_data="add_product")
+    btn2 = types.InlineKeyboardButton("Редактировать товар", callback_data="edit_product")
+    btn3 = types.InlineKeyboardButton("Удалить товар", callback_data="del_product")
+    btn4 = types.InlineKeyboardButton("<< Назад", callback_data="admin")
+    markup.add(btn1, btn2)
+    markup.add(btn3, btn4)
     return markup
 
 
@@ -40,7 +51,7 @@ def gen_empty_markup():
 
 def gen_admin_empty_markup():
     markup = types.InlineKeyboardMarkup()
-    btn1 = types.InlineKeyboardButton("Админ меню", callback_data="admin")
+    btn1 = types.InlineKeyboardButton("<< Назад", callback_data="admin")
     markup.add(btn1)
     return markup
 

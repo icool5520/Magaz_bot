@@ -36,6 +36,8 @@ def command_admin(message):
         uid = message.from_user.id
         if cid==uid and db_cmd.check_user_is_admin(uid):
             bot.send_message(cid, "Меню администратора", reply_markup=markup.gen_admin_markup())
+        elif cid == uid and not db_cmd.check_user_is_admin(uid):
+            bot.send_message(cid, "Права администратора отсутствуют\nНажмите /start для продолжения")
     except Exception as ex:
         print('start_msg:', ex)
 
@@ -137,8 +139,7 @@ def callback_display_cart(call):
                 if len(unique_list_id_product) == 1:
                     info_product = db_cmd.get_info_product(unique_list_id_product[0])
                     bot.send_message(chat_id=cid, text=f"{info_product[1]} \nКол-во: {lst_id_product.count(int(info_product[0]))}\n" +
-                                                       f"\nИтого: {amount} грн.",
-                                     reply_markup=markup.gen_cart_markup())
+                                                       f"\nИтого: {amount} грн.", reply_markup=markup.gen_cart_markup())
                 else:
                     info_product = db_cmd.get_info_product_cart(tuple(unique_list_id_product))
                     bot.send_message(chat_id=cid, text= "---Корзина---")
@@ -188,8 +189,9 @@ def callback_orders(call):
         mid = call.message.message_id
         if cid == uid:
             orders = db_cmd.get_cart_confirmed()
-            if orders is None:
-                bot.send_message(chat_id=cid,text="Заказы отсутствуют", reply_markup=markup.gen_empty_markup())
+            print(orders)
+            if len(orders) == 0:
+                bot.send_message(chat_id=cid,text="Заказы отсутствуют", reply_markup=markup.gen_admin_empty_markup())
             else:
                 for i in orders:
                     order_text = f"Заказ: #{i[0]}\nUser: {uid}\nНа сумму:{i[3]}"
@@ -208,7 +210,6 @@ def callback_accept_order(call):
         if cid == uid:
             id_order = int(call.data[13:])
             order = db_cmd.get_cart_by_id(id_order)
-            print(order[1])
             user_id = order[1]
             db_cmd.up_cart_order_status_by_id(id_order, "accepted")
             order_text = f"Ваш заказ #{id_order} на сумму: {order[3]}грн. принят\nОжидайте уведомление об отправке"
@@ -232,6 +233,19 @@ def callback_cancel_order(call):
             bot.send_message(chat_id=user_id,text=order_text)
     except Exception as ex:
         print('callback_cancel_order:', ex)
+
+
+@bot.callback_query_handler(func=lambda call: call.data == "products")
+def callback_admin_menu_products(call):
+    try:
+        cid = call.message.chat.id
+        uid = call.from_user.id
+        mid = call.message.message_id
+        if cid == uid:
+            bot.send_message(chat_id=cid,text="Меню товаров", reply_markup=markup.gen_admin_products_markup())
+    except Exception as ex:
+        print('callback_admin_menu_products:', ex)
+
 
 
 if __name__ == '__main__':
