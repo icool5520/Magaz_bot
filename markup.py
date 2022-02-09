@@ -60,9 +60,10 @@ def gen_cart_markup():
     markup = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton("\U00002705Оформить заказ", callback_data="confirm_order")
     btn2 = types.InlineKeyboardButton("\U0000274CУдалить заказ", callback_data="delete_order")
-    btn3 = types.InlineKeyboardButton("Главное меню", callback_data="start")
+    btn4 = types.InlineKeyboardButton("Главное меню", callback_data="start")
+    btn3 = types.InlineKeyboardButton("\U0001F4B5 \U0001f4b2 Оплата", callback_data="pay")
     markup.add(btn1, btn2)
-    markup.add(btn3)
+    markup.add(btn3, btn4)
     return markup
 
 

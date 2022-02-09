@@ -1,11 +1,16 @@
 import telebot
-# from telebot import types
+from telebot import types
+from telebot.types import LabeledPrice, ShippingOption 
 import markup
 import db_cmd
 import ast
+
 from settings import token
 
 bot = telebot.TeleBot(token)
+provider_token = '410694247:TEST:34fc39dd-7f9d-4612-8e7f-35ce95ec7b5c'
+# '080f48ec-b1f2-4a3e-a36c-79d3e9ca4b71'
+# '4bcc60ce-22ec-426e-8807-150b9c986250'
 
 
 @bot.message_handler(commands=['start'])
@@ -247,6 +252,64 @@ def callback_admin_menu_products(call):
         print('callback_admin_menu_products:', ex)
 
 
+@bot.callback_query_handler(func=lambda call: call.data == "pay")
+def callback_pay(call):
+    try:
+        cid = call.message.chat.id
+        uid = call.from_user.id
+        mid = call.message.message_id
+        amt = 150
+        # amt = get_amount(uid)
+        # up_state_pay(uid, 1)
+        prices = [LabeledPrice(label="оплата товараLabeledPrice", amount=int(amt)*100),
+                LabeledPrice('Доставка', 5000)]
+        bot.send_invoice(cid, title='Название товара',
+                        description='Описание товара',
+                        provider_token=provider_token,
+                        currency='uah',
+                        photo_url='https://creativnost.ua/7557-thickbox_default/shtamp-spasibo-za-pokupku-43kh34-sm.jpg',
+                        photo_height=512,
+                        photo_width=512,
+                        photo_size=512,
+                        is_flexible=True,
+                        prices=prices,
+                        start_parameter='start',
+                        invoice_payload='H')
+    except Exception as ex:
+        print('callback_pay:', ex)
 
-if __name__ == '__main__':
-    bot.polling()
+shipping_options = [ShippingOption(id='instant', title='Доставка').add_price(
+                    LabeledPrice('Новая почта', 10000)),
+                    ShippingOption(id='pickup', title='Доставка по городу').add_price(
+                    LabeledPrice('Курьер', 5000))]
+
+@bot.shipping_query_handler(func=lambda query: True)
+def shipping(shipping_query):
+    uid = shipping_query.from_user.id
+
+    #state = db_cmd.get_state_pay(uid)
+    #if state == 1
+    bot.answer_shipping_query(shipping_query.id, ok=True, shipping_options=shipping_options,
+                                error_message='Ошибка доставки платежа')
+
+@bot.message_handler(content_types=['successful_payment'])
+def got_payment(message):
+    cid = message.chat.id
+    uid = message.from_user.id
+    #state = db_cmd.get_state_pay(uid)
+    #if state == 1
+    bot.send_message(cid, 'Оплата успешна Сумма:{}{}'.format(message.successful_payment.total_amount/100, message.successful_payment.currency),
+        parse_mode="markdown")
+    # up_state_pay(uid, 'start')
+
+
+bot.skip_pending = True
+bot.polling(non_stop=True, interval=0)
+
+
+# while True:
+#     try:    
+#         bot.polling(non_stop=True, interval=0)
+#     except Exception as ex:
+#         print('Main Bot:', ex)
+
