@@ -144,7 +144,7 @@ def callback_display_cart(call):
                 if len(unique_list_id_product) == 1:
                     info_product = db_cmd.get_info_product(unique_list_id_product[0])
                     bot.send_message(chat_id=cid, text=f"{info_product[1]} \nКол-во: {lst_id_product.count(int(info_product[0]))}\n" +
-                                                       f"\nИтого: {amount} грн.", reply_markup=markup.gen_cart_markup())
+                                                       f"\nИтого: {amount} грн.", reply_markup=markup.gen_cart_markup(amount))
                 else:
                     info_product = db_cmd.get_info_product_cart(tuple(unique_list_id_product))
                     bot.send_message(chat_id=cid, text= "---Корзина---")
@@ -154,7 +154,7 @@ def callback_display_cart(call):
                             if int(j[0]) == i:
                                 cart_text_message = cart_text_message + f"{j[1]} \nКол-во: {lst_id_product.count(int(j[0]))}\n"
                     cart_text_message = cart_text_message + f"\nИтого: {amount} грн."
-                    bot.send_message(chat_id=cid, text=cart_text_message, reply_markup=markup.gen_cart_markup())
+                    bot.send_message(chat_id=cid, text=cart_text_message, reply_markup=markup.gen_cart_markup(amount))
     except Exception as ex:
         print('callback_display_cart:', ex)
 
@@ -252,16 +252,14 @@ def callback_admin_menu_products(call):
         print('callback_admin_menu_products:', ex)
 
 
-@bot.callback_query_handler(func=lambda call: call.data == "pay")
+@bot.callback_query_handler(func=lambda call: call.data.startswith("pay_"))
 def callback_pay(call):
     try:
         cid = call.message.chat.id
         uid = call.from_user.id
-        mid = call.message.message_id
-        amt = 150
-        # amt = get_amount(uid)
-        # up_state_pay(uid, 1)
-        prices = [LabeledPrice(label="оплата товараLabeledPrice", amount=int(amt)*100),
+        amount = int(call.data[4:])
+        db_cmd.up_user_state(uid, "pay")
+        prices = [LabeledPrice(label="оплата товараLabeledPrice", amount=int(amount)*100),
                 LabeledPrice('Доставка', 5000)]
         bot.send_invoice(cid, title='Название товара',
                         description='Описание товара',
@@ -286,20 +284,19 @@ shipping_options = [ShippingOption(id='instant', title='Доставка').add_p
 @bot.shipping_query_handler(func=lambda query: True)
 def shipping(shipping_query):
     uid = shipping_query.from_user.id
-
-    #state = db_cmd.get_state_pay(uid)
-    #if state == 1
-    bot.answer_shipping_query(shipping_query.id, ok=True, shipping_options=shipping_options,
+    state = db_cmd.get_user_state(uid)
+    if state == "pay":
+        bot.answer_shipping_query(shipping_query.id, ok=True, shipping_options=shipping_options,
                                 error_message='Ошибка доставки платежа')
 
 @bot.message_handler(content_types=['successful_payment'])
 def got_payment(message):
     cid = message.chat.id
     uid = message.from_user.id
-    #state = db_cmd.get_state_pay(uid)
-    #if state == 1
-    bot.send_message(cid, 'Оплата успешна Сумма:{}{}'.format(message.successful_payment.total_amount/100, message.successful_payment.currency),
-        parse_mode="markdown")
+    state = db_cmd.get_user_state(uid)
+    if state == "pay":
+        bot.send_message(cid, 'Оплата успешна Сумма:{}{}'.format(message.successful_payment.total_amount/100, message.successful_payment.currency),
+        parse_mode="Markdown")
     # up_state_pay(uid, 'start')
 
 

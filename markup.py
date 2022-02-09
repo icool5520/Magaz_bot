@@ -56,12 +56,12 @@ def gen_admin_empty_markup():
     return markup
 
 
-def gen_cart_markup():
+def gen_cart_markup(_amount):
     markup = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton("\U00002705Оформить заказ", callback_data="confirm_order")
     btn2 = types.InlineKeyboardButton("\U0000274CУдалить заказ", callback_data="delete_order")
     btn4 = types.InlineKeyboardButton("Главное меню", callback_data="start")
-    btn3 = types.InlineKeyboardButton("\U0001F4B5 \U0001f4b2 Оплата", callback_data="pay")
+    btn3 = types.InlineKeyboardButton("\U0001F4B5Оплата", callback_data=f"pay_{_amount}")
     markup.add(btn1, btn2)
     markup.add(btn3, btn4)
     return markup
