@@ -351,4 +351,21 @@ def get_data(_user_id):
 		return data[0]
 
 
+def up_user_state(_user_id, _state):
+	db_file = "db.db"
+	conn = None
+	try:
+		sql = f"""UPDATE users SET state="{_state}" WHERE user_id={_user_id}"""
+		conn = sqlite3.connect(db_file)
+		cur = conn.cursor()
+		cur.execute(sql)
+		conn.commit()
+		cur.close()
+	except Exception as ex:
+		print('up_user_state:', ex)
+	finally:
+		if conn is not None:
+			conn.close()
+
+
 create_tables()
