@@ -368,4 +368,22 @@ def up_user_state(_user_id, _state):
 			conn.close()
 
 
+def get_user_state(_user_id):
+	db_file = "db.db"
+	conn = None
+	try:
+		sql = f"""SELECT state FROM users WHERE user_id={_user_id}"""
+		conn = sqlite3.connect(db_file)
+		cur = conn.cursor()
+		cur.execute(sql)
+		data = cur.fetchone()
+		cur.close()
+	except Exception as ex:
+		print('get_user_state:', ex)
+	finally:
+		if conn is not None:
+			conn.close()
+		return data[0]
+
+
 create_tables()
